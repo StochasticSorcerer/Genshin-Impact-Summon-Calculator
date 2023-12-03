@@ -45,4 +45,3 @@ monte_carlo <- function(n_summons, goal, starting_pity, previous_featured, n_sam
   
   return(samples)
 }
-
