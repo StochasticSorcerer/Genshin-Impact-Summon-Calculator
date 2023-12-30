@@ -2,46 +2,73 @@ library(shiny)
 library(tidyverse)
 library(shinycssloaders)
 library(plotly)
+library(bsicons)
+library(bslib)
+#library(shinyBS)
 
 source('mc_functions.R')
 
-ui <- fluidPage(
-
-    titlePanel('Genshin Impact Summon Calculator'),
-
-    sidebarLayout(
-        sidebarPanel(
-          textInput('summons', 'How many summons?', value = '80'),
-          sliderInput('pity', 'What is your current pity?', min = 0, max = 79, value = 0),
-          selectInput('featured', 'Was your last 5 star a featured unit?', choices = c('No' = 0, 'Yes' = 1),selected = 'No'),
-          textInput('goal', 'How many of the featured unit do you want?', value = '1'),
-          sliderInput('sims', 'How many simulations?', min = 100, max = 10000, value = 1000),
-          h4('Increasing this will make the program run longer but yield more accurate results.')
-        ),
-        
-        mainPanel(
-          withSpinner(textOutput('prob')),
-          tags$head(tags$style('#prob{font-size: 20px; color: #000000}')),
-          br(),
-          withSpinner(textOutput('expected_5star')),
-          tags$head(tags$style('#expected_5star{font-size: 20px; color: #000000}')),
-          br(),
-          withSpinner(textOutput('confint_5star')),
-          tags$head(tags$style('#confint_5star{font-size: 20px; color: #000000}')),
-          br(),
-          withSpinner(textOutput('expected_summons')),
-          tags$head(tags$style('#expected_summons{font-size: 20px; color: #000000}')),
-          br(),
-          withSpinner(textOutput('confint_summons')),
-          tags$head(tags$style('#confint_summons{font-size: 20px; color: #000000}')),
-          br(), br(),
-          withSpinner(plotlyOutput('plot')),
-          withSpinner(plotlyOutput('plot2'))
-        )
+ui <- page_sidebar(
+  title = 'Genshin Impact Summon Calculator',
+  sidebar = sidebar(
+    title = 'Inputs',
+    width = 400,
+    textInput('summons', tooltip(p('Summons', bs_icon('info-circle')), 'The amount of summons you want to perform. Each summon is equivalent to 160 Primogems or 1 Intertwined Fate.'), value = '80'),
+    sliderInput('pity', tooltip(p('Pity Count', bs_icon('info-circle')), 'The amount of summons since your last 5 star. After 79 consecutive summons without a 5-star, the next summon (80th) is guaranteed to be a 5-star.'), min = 0, max = 79, value = 0),
+    selectInput('featured', tooltip(p('Previous 5-Star', bs_icon('info-circle')), 'If your previous 5-star was a featured unit, the next 5-star has a 50% chance to be featured. If your previous 5-star was NOT a featured unit, the next 5-star is guaranteed to be featured.'), choices = c('Non-Featured' = 0, 'Featured' = 1),selected = 'No'),
+    textInput('goal', tooltip(p('5-Star Goal', bs_icon('info-circle')), 'How many of the featured unit do you want? The highest you should aim for is 7 to max out your character at constellation level 6.'), value = '1'),
+    sliderInput('sims', tooltip(p('Simulations', bs_icon('info-circle')), 'The amount of time to simulate the above settings. Increasing this will make the program run longer but yield more accurate results.'), min = 100, max = 10000, value = 1000)
+  ),
+  mainPanel(
+    width = 12,
+    layout_columns(
+      fill = F,
+      value_box(
+        title = tooltip(p('Chance of Reaching the Goal', bs_icon('info-circle')), "This is the probability that you will reach your goal given the parameters inputted. This statistic is calculated via Monte Carlo simulations so this isn't the exact value but a good estimation of it."),
+        value = withSpinner(textOutput('prob')),
+        showcase = icon('dice')
+      ),
+      value_box(
+        title = tooltip(p('Expected Summons', bs_icon('info-circle')), "This is the amount of summons are expected to use to reach the goal specified using the parameters inputted. As this is an expectation, you should view this as the average case. You are not guaranteed to reach your goal using this many summons. This statistic is calculated via Monte Carlo simulations so this isn't the exact value but a good estimation of it."),
+        value = withSpinner(textOutput('expected_summons')),
+        showcase = icon('hat-wizard')
+      ),
+      value_box(
+        title = tooltip(p('Expected Featured 5-Stars', bs_icon('info-circle')), "This is the amount of the featured 5-star unit you are expected to summon using the parameters inputted. As this is an expectation, you should view this as the average case. You are not guaranteed to get this many copies of the unit. This statistic is calculated via Monte Carlo simulations so this isn't the exact value but a good estimation of it."),
+        value = withSpinner(textOutput('expected_5star')),
+        showcase = bs_icon('stars')
+      )
+    ),
+    layout_columns(
+      fill = F,
+      card(
+        card_title(tooltip(p('Distribution of Summons Needed', bs_icon('info-circle')), "Given the parameters inputted, this is the distribution of summons needed to reach your goal. This graph is designed to give more information than the statistics given above. This data for the graph is calculated via Monte Carlo simulations so this isn't the exact distribution but a good estimation of it.")),
+        withSpinner(plotlyOutput('plot'))
+      ),
+      card(
+        card_title(tooltip(p('Distribution of Featured 5-Stars', bs_icon('info-circle')), "Given the parameters inputted, this is the distribution of the amount of featured 5-stars summoned. This graph is designed to give more information than the statistics given above. This data for the graph is calculated via Monte Carlo simulations so this isn't the exact distribution but a good estimation of it.")),
+        withSpinner(plotlyOutput('plot2'))
+      )
     )
+    # tabsetPanel(
+    #   type = 'tabs',
+    #   tabPanel(
+    #     'Stats',
+    #     width = 12
+    #   ),
+    #   tabPanel(
+    #     'About',
+    #     width = 12
+    #   )
+    # )
+  )
 )
 
 server <- function(input, output) {
+  
+  output$plot_name1 <- renderText(paste0('Chance of Getting ', input$goal,' Featured 5 Stars'))
+  
+  output$plot_name2 <- renderText(paste0('Distribution of Summoned Featured 5 Stars Using ', input$summons, ' Summons'))
   
   data <- reactive({monte_carlo(as.integer(input$summons), as.integer(input$goal), as.integer(input$pity), as.integer(input$featured), as.integer(input$sims))})
   
@@ -65,8 +92,7 @@ server <- function(input, output) {
     
     x <- ggplot(data2, aes(Summons, Probability)) +
       geom_step() +
-      theme_bw() +
-      ggtitle(paste0('Chance of Getting ', input$goal,' Featured 5 Stars'))
+      theme_bw()
     
     ggplotly(x) %>%
       config(displayModeBar = FALSE) %>%
@@ -84,8 +110,7 @@ server <- function(input, output) {
     
     x <- ggplot(data2 , aes(x = `Featured 5 Stars`, y = Probability)) +
       geom_bar(stat = 'identity', fill = 'black') +
-      theme_bw() +
-      labs(title = paste0('Distribution of Summoned Featured 5 Stars Using ', input$summons, ' Summons'))
+      theme_bw()
     
     ggplotly(x) %>%
       config(displayModeBar = FALSE) %>%
@@ -94,15 +119,12 @@ server <- function(input, output) {
              clickmode = F)
   })
   
-  output$prob <- renderText(paste0('Probability of At Least ', input$goal, ' Featured 5 Stars: ', round(probability() * 100, 2), '%'))
+
+  output$prob <- renderText(paste0(round(probability() * 100, 2), '%'))
+
+  output$expected_5star <- renderText(round(expectation()[1,1], 2))
   
-  output$expected_5star <- renderText(paste0('Expected Featured 5 Stars in ', input$summons, ' Summons: ', round(expectation()[1,1], 2)))
-  
-  output$confint_5star <- renderText(paste0('90% Confidence Interval: (', round(expectation()[1,5], 2), ', ', round(expectation()[1,6], 2),')'))
-  
-  output$expected_summons <- renderText(paste0('Expected Summons for ', input$goal, ' Featured 5 Stars: ', round(expectation()[1,7], 2)))
-  
-  output$confint_summons <- renderText(paste0('90% Confidence Interval: (', round(expectation()[1,10], 2), ', ', round(expectation()[1,11], 2),')'))
+  output$expected_summons <- renderText(round(expectation()[1,7], 2))
   
   output$plot <- renderPlotly({plot()})
   
