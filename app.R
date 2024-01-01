@@ -4,14 +4,13 @@ library(shinycssloaders)
 library(plotly)
 library(bsicons)
 library(bslib)
-#library(shinyBS)
 
 source('mc_functions.R')
 
 ui <- page_sidebar(
   title = 'Genshin Impact Summon Calculator',
   sidebar = sidebar(
-    title = 'Inputs',
+    title = 'Settings',
     width = 400,
     textInput('summons', tooltip(p('Summons', bs_icon('info-circle')), 'The amount of summons you want to perform. Each summon is equivalent to 160 Primogems or 1 Intertwined Fate.'), value = '80'),
     sliderInput('pity', tooltip(p('Pity Count', bs_icon('info-circle')), 'The amount of summons since your last 5 star. After 79 consecutive summons without a 5-star, the next summon (80th) is guaranteed to be a 5-star.'), min = 0, max = 79, value = 0),
@@ -21,46 +20,61 @@ ui <- page_sidebar(
   ),
   mainPanel(
     width = 12,
-    layout_columns(
-      fill = F,
-      value_box(
-        title = tooltip(p('Chance of Reaching the Goal', bs_icon('info-circle')), "This is the probability that you will reach your goal given the parameters inputted. This statistic is calculated via Monte Carlo simulations so this isn't the exact value but a good estimation of it."),
-        value = withSpinner(textOutput('prob')),
-        showcase = icon('dice')
+    tabsetPanel(
+      type = 'tabs',
+      tabPanel(
+        'Dashboard',
+        width = 12,
+        layout_columns(
+          fill = F,
+          height = '140px',
+          value_box(
+            title = tooltip(p('Chance of Reaching the Goal', bs_icon('info-circle')), "This is the probability that you will reach your goal given the parameters inputted"),
+            value = withSpinner(textOutput('prob')),
+            showcase = icon('dice')
+          ),
+          value_box(
+            title = tooltip(p('Expected Summons', bs_icon('info-circle')), "This is the amount of summons you are expected to use to reach the goal specified using the parameters inputted. This is an expected value, not a guarantee."),
+            value = withSpinner(textOutput('expected_summons')),
+            showcase = icon('hat-wizard')
+          ),
+          value_box(
+            title = tooltip(p('Expected Featured 5-Stars', bs_icon('info-circle')), "This is the amount of the featured 5-star unit you are expected to summon using the parameters inputted. This is an expected value, not a guarantee."),
+            value = withSpinner(textOutput('expected_5star')),
+            showcase = bs_icon('stars')
+          )
+        ),
+        layout_columns(
+          fill = F,
+          height = '500px',
+          card(
+            card_title(tooltip(p('Distribution of Summons Needed', bs_icon('info-circle')), "Given the parameters inputted, this is the distribution of summons needed to reach your goal. This graph is designed to give more information than the statistics given above.")),
+            withSpinner(plotlyOutput('plot'))
+          ),
+          card(
+            card_title(tooltip(p('Distribution of Featured 5-Stars', bs_icon('info-circle')), "Given the parameters inputted, this is the distribution of the amount of featured 5-stars summoned. This graph is designed to give more information than the statistics given above.")),
+            withSpinner(plotlyOutput('plot2'))
+          )
+        )
       ),
-      value_box(
-        title = tooltip(p('Expected Summons', bs_icon('info-circle')), "This is the amount of summons are expected to use to reach the goal specified using the parameters inputted. As this is an expectation, you should view this as the average case. You are not guaranteed to reach your goal using this many summons. This statistic is calculated via Monte Carlo simulations so this isn't the exact value but a good estimation of it."),
-        value = withSpinner(textOutput('expected_summons')),
-        showcase = icon('hat-wizard')
-      ),
-      value_box(
-        title = tooltip(p('Expected Featured 5-Stars', bs_icon('info-circle')), "This is the amount of the featured 5-star unit you are expected to summon using the parameters inputted. As this is an expectation, you should view this as the average case. You are not guaranteed to get this many copies of the unit. This statistic is calculated via Monte Carlo simulations so this isn't the exact value but a good estimation of it."),
-        value = withSpinner(textOutput('expected_5star')),
-        showcase = bs_icon('stars')
-      )
-    ),
-    layout_columns(
-      fill = F,
-      card(
-        card_title(tooltip(p('Distribution of Summons Needed', bs_icon('info-circle')), "Given the parameters inputted, this is the distribution of summons needed to reach your goal. This graph is designed to give more information than the statistics given above. This data for the graph is calculated via Monte Carlo simulations so this isn't the exact distribution but a good estimation of it.")),
-        withSpinner(plotlyOutput('plot'))
-      ),
-      card(
-        card_title(tooltip(p('Distribution of Featured 5-Stars', bs_icon('info-circle')), "Given the parameters inputted, this is the distribution of the amount of featured 5-stars summoned. This graph is designed to give more information than the statistics given above. This data for the graph is calculated via Monte Carlo simulations so this isn't the exact distribution but a good estimation of it.")),
-        withSpinner(plotlyOutput('plot2'))
+      tabPanel(
+        'About',
+        width = 12,
+        card(
+          card_title('The Developer'),
+          p('I am Luke Andrade, currently a senior in college double majoring in statistics and mathematics. I am an aspiring data scientist and quantitative researcher who loves applied and theoretical probability. In my freetime I enjoy learning about financial mathematics and stock trading, programming new tools such as this one, and playing videogames with my friends. My other ongoing projects which will most likely not be made publically available include...'),
+          p('Blackjack Optimization Tool: A tool that optimizes gameplay by suggesting the optimal move based on the cards that have been drawn. This project will include a heuristic approach via automated card counting and a probabilistic approach to optimal decision making. Additional elements may include a UI and a computer vision model to automatically read cards that are drawn from the screen.'),
+          p('Algorithmic Programming: Currently learning about the stock market and trading strategies. Developing a program to automatically trade stocks and backtest new strategies using an API provided by a brokerage. Will integrate machine learning or deep learning models into strategies. The goal with this is to learn, not a failed attempt at getting rich fast!'),
+          p('Feel free to connect with me on ', a(href = 'https://www.linkedin.com/in/landrade0228/', 'LinkedIn'))
+        ),
+        card(
+          card_title('Monte Carlo Simulation / Law of Large Numbers'),
+          p('This application is built on real-time Monte Carlo simulated data, thus each simulation will yield different results. The statistics generated in the dashboard are not exact but they are good estimators of the actual values. This is backed by the Law of Large Numbers.'),
+          p('Suppose you flip a coin 8 times. You would expect to see 4 heads and 4 tails. However, this is not always the case. Sometimes you will get 2 heads and 6 tails which gives you a 25% chance of getting heads. Now if you flip a coin 1000 times, the amount of heads and tails you get will most likely be more even and your probability of seeing heads will be closer to 50% which is what you should expect. That in essence is the Law of Large Numbers. As you take more samples, you approach the true mean or probability.'),
+          p('Monte Carlo simulations are based on this law. I coded in the logic for summoning in Genshin Impact and then this program simulates it many times to estimate the probabilities and expected values displayed in the dashboard tab.')
+        )
       )
     )
-    # tabsetPanel(
-    #   type = 'tabs',
-    #   tabPanel(
-    #     'Stats',
-    #     width = 12
-    #   ),
-    #   tabPanel(
-    #     'About',
-    #     width = 12
-    #   )
-    # )
   )
 )
 
@@ -91,8 +105,8 @@ server <- function(input, output) {
     names(data2) <- c('Summons', 'Probability')
     
     x <- ggplot(data2, aes(Summons, Probability)) +
-      geom_step() +
-      theme_bw()
+      geom_step(color = '#3d80c6') +
+      theme_classic()
     
     ggplotly(x) %>%
       config(displayModeBar = FALSE) %>%
@@ -109,8 +123,8 @@ server <- function(input, output) {
       mutate('Featured 5 Stars' = factor(X1))
     
     x <- ggplot(data2 , aes(x = `Featured 5 Stars`, y = Probability)) +
-      geom_bar(stat = 'identity', fill = 'black') +
-      theme_bw()
+      geom_bar(stat = 'identity', fill = '#3d80c6') +
+      theme_classic()
     
     ggplotly(x) %>%
       config(displayModeBar = FALSE) %>%
