@@ -62,9 +62,7 @@ ui <- page_sidebar(
         width = 12,
         card(
           card_title('The Developer'),
-          p('I am Luke Andrade, currently a senior in college double majoring in statistics and mathematics. I am an aspiring data scientist and quantitative researcher who loves applied and theoretical probability. In my freetime I enjoy learning about financial mathematics and stock trading, programming new tools such as this one, and playing videogames with my friends. My other ongoing projects which will most likely not be made publically available include...'),
-          p('Blackjack Optimization Tool: A tool that optimizes gameplay by suggesting the optimal move based on the cards that have been drawn. This project will include a heuristic approach via automated card counting and a probabilistic approach to optimal decision making. Additional elements may include a UI and a computer vision model to automatically read cards that are drawn from the screen.'),
-          p('Algorithmic Programming: Currently learning about the stock market and trading strategies. Developing a program to automatically trade stocks and backtest new strategies using an API provided by a brokerage. Will integrate machine learning or deep learning models into strategies. The goal with this is to learn, not a failed attempt at getting rich fast!'),
+          p('I am Luke Andrade, currently a senior in college double majoring in statistics and mathematics. I am an aspiring data scientist and quantitative researcher who loves applied and theoretical probability. In my freetime I enjoy learning about financial mathematics and stock trading, programming new tools such as this one, and playing videogames with my friends.'),
           p('Feel free to connect with me on ', a(href = 'https://www.linkedin.com/in/landrade0228/', 'LinkedIn'))
         ),
         card(
