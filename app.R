@@ -62,7 +62,7 @@ ui <- page_sidebar(
         width = 12,
         card(
           card_title('The Developer'),
-          p('I am Luke Andrade, currently a senior in college double majoring in statistics and mathematics. I am an aspiring data scientist and quantitative researcher who loves applied and theoretical probability. In my freetime I enjoy learning about financial mathematics and stock trading, programming new tools such as this one, and playing videogames with my friends.'),
+          p('I am Luke Andrade, currently a senior in college double majoring in statistics and mathematics. I am an aspiring data scientist and quantitative researcher who loves applied and theoretical probability. In my freetime I enjoy learning about financial mathematics and stock trading, programming new tools such as this one, and playing videogames with my friends. My future goals are to earn a masters degree in mathematical finance and to become comfortable in researching stochastic calculus.'),
           p('Feel free to connect with me on ', a(href = 'https://www.linkedin.com/in/landrade0228/', 'LinkedIn'))
         ),
         card(
