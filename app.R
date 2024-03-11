@@ -48,7 +48,7 @@ ui <- page_sidebar(
           fill = F,
           height = '500px',
           card(
-            card_title(tooltip(p('Distribution of Summons Needed', bs_icon('info-circle')), "Given the parameters inputted, this is the distribution of summons needed to reach your goal. This graph is designed to give more information than the statistics given above.")),
+            card_title(tooltip(p('Cumulative Distribution of Summons Needed', bs_icon('info-circle')), "Given the parameters inputted, this is the distribution of summons needed to reach your goal. This graph is designed to give more information than the statistics given above.")),
             withSpinner(plotlyOutput('plot'))
           ),
           card(
@@ -104,6 +104,7 @@ server <- function(input, output) {
     
     x <- ggplot(data2, aes(Summons, Probability)) +
       geom_step(color = '#3d80c6') +
+      labs(y = 'Cumulative Probability') +
       theme_classic()
     
     ggplotly(x) %>%
