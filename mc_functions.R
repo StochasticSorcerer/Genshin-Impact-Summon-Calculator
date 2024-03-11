@@ -26,7 +26,7 @@ summon_simulation <- function(n_summons, goal, starting_pity, previous_featured)
   res <- c(0,0)
   
   while(i < n_summons | counter < goal){
-    ifelse(pity == 79, check_previous(previous), summon(previous))
+    ifelse(pity == 89, check_previous(previous), summon(previous))
     i <- i + 1
     if(i == n_summons){res[1] <- counter}
     if(con == 0 & counter == goal){res[2] <- i; con <- 1}
