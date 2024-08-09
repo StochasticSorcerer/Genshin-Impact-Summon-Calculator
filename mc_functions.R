@@ -69,7 +69,7 @@ summon_simulation_av <- function(n_summons, goal, starting_pity, previous_featur
     if(i == n_summons){res[1] <- counter}
     if(con == 0 & counter == goal){res[2] <- i; con <- 1}
     
-    summon_av(pity, previous, 1-u)
+    summon(pity, previous, 1-u)
     i <- i + 1
     if(i == n_summons){res[1] <- counter}
     if(con == 0 & counter == goal){res[2] <- i; con <- 1}
@@ -126,7 +126,7 @@ summon_simulation_qrn_av <- function(n_summons, goal, starting_pity, previous_fe
     if(i == n_summons){res[1] <- counter}
     if(con == 0 & counter == goal){res[2] <- i; con <- 1}
     
-    summon_av(pity, previous, 1-u)
+    summon(pity, previous, 1-u)
     i <- i + 1
     if(i == n_summons){res[1] <- counter}
     if(con == 0 & counter == goal){res[2] <- i; con <- 1}
