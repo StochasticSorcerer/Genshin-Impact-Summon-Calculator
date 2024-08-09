@@ -12,11 +12,14 @@ ui <- page_sidebar(
   sidebar = sidebar(
     title = 'Settings',
     width = 400,
-    textInput('summons', tooltip(p('Summons', bs_icon('info-circle')), 'The amount of summons you want to perform. Each summon is equivalent to 160 Primogems or 1 Intertwined Fate.'), value = '80'),
-    sliderInput('pity', tooltip(p('Pity Count', bs_icon('info-circle')), 'The amount of summons since your last 5 star. After 79 consecutive summons without a 5-star, the next summon (80th) is guaranteed to be a 5-star.'), min = 0, max = 79, value = 0),
-    selectInput('featured', tooltip(p('Previous 5-Star', bs_icon('info-circle')), 'If your previous 5-star was a featured unit, the next 5-star has a 50% chance to be featured. If your previous 5-star was NOT a featured unit, the next 5-star is guaranteed to be featured.'), choices = c('Non-Featured' = 0, 'Featured' = 1),selected = 'No'),
-    textInput('goal', tooltip(p('5-Star Goal', bs_icon('info-circle')), 'How many of the featured unit do you want? The highest you should aim for is 7 to max out your character at constellation level 6.'), value = '1'),
-    sliderInput('sims', tooltip(p('Simulations', bs_icon('info-circle')), 'The amount of time to simulate the above settings. Increasing this will make the program run longer but yield more accurate results.'), min = 100, max = 10000, value = 1000)
+    textInput('summons', tooltip(p('Summons', bs_icon('info-circle')), 'The amount of summons you want to perform. Each summon is equivalent to 160 Primogems or 1 Intertwined Fate.'), value = '90'),
+    sliderInput('pity', tooltip(p('Pity Count', bs_icon('info-circle')), 'The amount of summons since your last 5 star. After 89 consecutive summons without a 5-star, the next summon (90th) is guaranteed to be a 5-star.'), min = 0, max = 89, value = 0),
+    selectInput('featured', tooltip(p('Previous 5-Star', bs_icon('info-circle')), 'If your previous 5-star was a featured unit, the next 5-star has a 50% chance to be featured. If your previous 5-star was NOT a featured unit, the next 5-star is guaranteed to be featured.'), choices = c('Non-Featured' = 0, 'Featured' = 1), selected = 'Non-Featured'),
+    #textInput('goal', tooltip(p('5-Star Goal', bs_icon('info-circle')), 'How many of the featured unit do you want? The highest you should aim for is 7 to max out your character at constellation level 6.'), value = '1'),
+    selectInput('goal', tooltip(p('5-Star Goal', bs_icon('info-circle')), 'How many of the featured unit do you want? The highest you should aim for is 7 to max out your character at constellation level 6.'), choices = seq(1,7), selected = 1),
+    sliderInput('sims', tooltip(p('Simulations', bs_icon('info-circle')), 'The amount of time to simulate the above settings. Increasing this will make the program run longer but yield more accurate results.'), min = 100, max = 10000, value = 1000),
+    selectInput('method', tooltip(p('Variance Reduction Method', bs_icon('info-circle')), 'You can select which variance reduction technique is used. Quasi Random Numbers lowers the variance the most.'), choices = c('None' = 'normal', 'Antithetic Variates' = 'av', 'Quasi Random Numbers' = 'qrn', 'Quasi Random Numbers and Antithetic Variates' = 'qrn_av'), selected = 'qrn'),
+    sliderInput('conf', tooltip(p('Value at Risk Confidence Level', bs_icon('info-circle')), 'The confidence level you want for the calculated value at risk.'), min = 0, max = 1, value = 0.95)
   ),
   mainPanel(
     width = 12,
@@ -42,34 +45,24 @@ ui <- page_sidebar(
             title = tooltip(p('Expected Featured 5-Stars', bs_icon('info-circle')), "This is the amount of the featured 5-star unit you are expected to summon using the parameters inputted. This is an expected value, not a guarantee."),
             value = withSpinner(textOutput('expected_5star')),
             showcase = bs_icon('stars')
+          ),
+          value_box(
+            title = tooltip(p('Value at Risk', bs_icon('info-circle')), "This is the amount of summons you should be prepared to use in order to reach the goal inputted. This changes with the confidence level."),
+            value = withSpinner(textOutput('var')),
+            showcase = bs_icon('graph-down-arrow')
           )
         ),
         layout_columns(
           fill = F,
           height = '500px',
           card(
-            card_title(tooltip(p('Distribution of Summons Needed', bs_icon('info-circle')), "Given the parameters inputted, this is the distribution of summons needed to reach your goal. This graph is designed to give more information than the statistics given above.")),
+            card_title(tooltip(p('Cumulative Distribution of Summons Needed to Reach Your 5-Star Goal', bs_icon('info-circle')), "Given the parameters inputted, this is the distribution of summons needed to reach your goal. This graph is designed to give more information than the statistics given above.")),
             withSpinner(plotlyOutput('plot'))
           ),
           card(
-            card_title(tooltip(p('Distribution of Featured 5-Stars', bs_icon('info-circle')), "Given the parameters inputted, this is the distribution of the amount of featured 5-stars summoned. This graph is designed to give more information than the statistics given above.")),
+            card_title(tooltip(p('Distribution of Featured 5-Stars Pulled Using Your Amount of Summons', bs_icon('info-circle')), "Given the parameters inputted, this is the distribution of the amount of featured 5-stars summoned. This graph is designed to give more information than the statistics given above.")),
             withSpinner(plotlyOutput('plot2'))
           )
-        )
-      ),
-      tabPanel(
-        'About',
-        width = 12,
-        card(
-          card_title('The Developer'),
-          p('I am Luke Andrade, currently a senior in college double majoring in statistics and mathematics. I am an aspiring data scientist and quantitative researcher who loves applied and theoretical probability. In my freetime I enjoy learning about financial mathematics and stock trading, programming new tools such as this one, and playing videogames with my friends. My future goals are to earn a masters degree in mathematical finance and to become comfortable in researching stochastic calculus.'),
-          p('Feel free to connect with me on ', a(href = 'https://www.linkedin.com/in/landrade0228/', 'LinkedIn'))
-        ),
-        card(
-          card_title('Monte Carlo Simulation / Law of Large Numbers'),
-          p('This application is built on real-time Monte Carlo simulated data, thus each simulation will yield different results. The statistics generated in the dashboard are not exact but they are good estimators of the actual values. This is backed by the Law of Large Numbers.'),
-          p('Suppose you flip a coin 8 times. You would expect to see 4 heads and 4 tails. However, this is not always the case. Sometimes you will get 2 heads and 6 tails which gives you a 25% chance of getting heads. Now if you flip a coin 1000 times, the amount of heads and tails you get will most likely be more even and your probability of seeing heads will be closer to 50% which is what you should expect. That in essence is the Law of Large Numbers. As you take more samples, you approach the true mean or probability.'),
-          p('Monte Carlo simulations are based on this law. I coded in the logic for summoning in Genshin Impact and then this program simulates it many times to estimate the probabilities and expected values displayed in the dashboard tab.')
         )
       )
     )
@@ -82,7 +75,7 @@ server <- function(input, output) {
   
   output$plot_name2 <- renderText(paste0('Distribution of Summoned Featured 5 Stars Using ', input$summons, ' Summons'))
   
-  data <- reactive({monte_carlo(as.integer(input$summons), as.integer(input$goal), as.integer(input$pity), as.integer(input$featured), as.integer(input$sims))})
+  data <- reactive({monte_carlo(as.integer(input$summons), as.integer(input$goal), as.integer(input$pity), as.integer(input$featured), as.integer(input$sims), input$method)})
   
   probability <- reactive({
     x <- data() %>% filter(X1 >= as.integer(input$goal)) %>% nrow()
@@ -104,6 +97,7 @@ server <- function(input, output) {
     
     x <- ggplot(data2, aes(Summons, Probability)) +
       geom_step(color = '#3d80c6') +
+      labs(y = 'Cumulative Probability') +
       theme_classic()
     
     ggplotly(x) %>%
@@ -131,6 +125,9 @@ server <- function(input, output) {
              clickmode = F)
   })
   
+  value_at_risk <- reactive({
+    quantile(data()$X2, probs = as.numeric(input$conf))
+  })
 
   output$prob <- renderText(paste0(round(probability() * 100, 2), '%'))
 
@@ -141,6 +138,9 @@ server <- function(input, output) {
   output$plot <- renderPlotly({plot()})
   
   output$plot2 <- renderPlotly(plot2())
+  
+  output$var <- renderText(paste0(value_at_risk(), ' Summons'))
+  
 }
 
 shinyApp(ui = ui, server = server)
